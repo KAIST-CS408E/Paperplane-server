@@ -1,0 +1,26 @@
+{
+  "name": "paperplane-server",
+  "version": "1.0.0",
+  "description": "API server for Paperplane project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prestart": "./node_modules/.bin/eslint .",
+    "start": "node server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KAIST-CS408E/Paperplane-server.git"
+  },
+  "author": "Team Paperplane",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KAIST-CS408E/Paperplane-server/issues"
+  },
+  "homepage": "https://github.com/KAIST-CS408E/Paperplane-server#readme",
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0"
+  }
+}
