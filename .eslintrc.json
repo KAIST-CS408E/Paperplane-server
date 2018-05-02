@@ -2,5 +2,8 @@
   "extends": "airbnb-base",
   "env": {
     "node": true
+  },
+  "rules": {
+    "consistent-return": "off"
   }
 }
