@@ -1,0 +1,3 @@
+[submodule "latex-parser"]
+	path = latex-parser
+	url = https://github.com/arxiv-vanity/engrafo
