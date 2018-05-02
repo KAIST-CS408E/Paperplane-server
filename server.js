@@ -1,6 +1,8 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+/* global process:false */
+import express from 'express';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+import addRoutes from './routes';
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -18,7 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 /* Routes settings. */
-require('./routes')(app);
+addRoutes(app);
 
 /* Start listening to given port. */
 app.listen(PORT, () => {
