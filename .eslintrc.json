@@ -4,6 +4,7 @@
     "node": true
   },
   "rules": {
-    "consistent-return": "off"
+    "consistent-return": "off",
+    "object-curly-newline": "off"
   }
 }

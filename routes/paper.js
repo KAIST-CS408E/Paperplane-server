@@ -66,7 +66,7 @@ router.post('/papers', async (req, res) => {
     });
     /* TODO: duplicate paper check logic required. */
     await newPaper.save();
-    res.end(`Successfully save the paper: [${paperTitle}]`);
+    res.status(201).end(`Successfully save the paper: [${paperTitle}]`);
   } catch (err) {
     res.status(500).end(err);
   }
