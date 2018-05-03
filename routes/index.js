@@ -35,18 +35,34 @@ const routes = function addRoutesToApp(app) {
   });
 
   app.post('/api/papers', async (req, res) => {
+    const findAllSections = function findAllSectionsFromPaper(content) {
+      const regex = /<h2 class="ltx_title ltx_title_section">\s*<span class="ltx_tag ltx_tag_section"><a href="#S\d+">(\d+)\s*<\/a><\/span>"?(.*)"?<\/h2>/g;
+      const sections = [];
+      let match;
+      while (match = regex.exec(content)) { /* eslint-disable-line no-cond-assign */
+        sections.push({
+          number: match[1],
+          name: match[2],
+        });
+      }
+      return sections;
+    };
+
     try {
       await runCommand('mkdir tmp');
       /* TODO: get file from request body and save it, not basic.tex. */
       await runCommand('latex-parser/script/engrafo -o tmp latex-parser/tests/documents/basic.tex');
       const paperContent = fs.readFileSync('tmp/index.html', 'utf-8');
       const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperContent)[1];
+      const paperSections = findAllSections(paperContent);
       await runCommand('rm -rf tmp');
 
       const newPaper = new PaperModel({
         title: paperTitle,
         content: paperContent,
+        sections: paperSections,
       });
+      /* TODO: duplicate paper check logic required. */
       await newPaper.save();
       res.end(`Successfully save the paper: [${paperTitle}]`);
     } catch (err) {
