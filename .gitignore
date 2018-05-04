@@ -7,3 +7,6 @@
 # npm
 node_modules/
 package-lock.json
+
+# static files
+static/

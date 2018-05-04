@@ -2,7 +2,10 @@
 import express from 'express';
 import { spawn } from 'child_process';
 import fs from 'fs';
+import multer from 'multer';
 import PaperModel from '../models/paper';
+
+const upload = multer({ dest: './static' });
 
 const runCommand = function runCommand(command) {
   const tokens = command.split(' ').map(token => token.trim());
@@ -36,7 +39,7 @@ router.get('/papers', async (req, res) => {
   }
 });
 
-router.post('/papers', async (req, res) => {
+router.post('/papers', upload.single('paper'), async (req, res) => {
   const findAllSections = function findAllSectionsFromPaper(content) {
     const regex = /<h2 class="ltx_title ltx_title_section">\s*<span class="ltx_tag ltx_tag_section"><a href="#S\d+">(\d+)\s*<\/a><\/span>"?(.*)"?<\/h2>/g;
     const sections = [];
@@ -50,14 +53,18 @@ router.post('/papers', async (req, res) => {
     return sections;
   };
 
+  const { file } = req;
   try {
-    await runCommand('mkdir tmp');
-    /* TODO: get file from request body and save it, not basic.tex. */
-    await runCommand('latex-parser/script/engrafo -o tmp latex-parser/tests/documents/basic.tex');
-    const paperContent = fs.readFileSync('tmp/index.html', 'utf-8');
+    /* TODO: check duplicate paper. */
+    await runCommand('mkdir static/tmp');
+    await runCommand(`unzip ${file.path} -d static/tmp`);
+    await runCommand('touch static/tmp/index.html');
+    await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
+    const paperContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperContent)[1];
     const paperSections = findAllSections(paperContent);
-    await runCommand('rm -rf tmp');
+    await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
+    await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
 
     const newPaper = new PaperModel({
       title: paperTitle,
@@ -68,6 +75,7 @@ router.post('/papers', async (req, res) => {
     await newPaper.save();
     res.status(201).end(`Successfully save the paper: [${paperTitle}]`);
   } catch (err) {
+    await runCommand(`rm -rf ${file.path} static/tmp`);
     res.status(500).end(err);
   }
 });

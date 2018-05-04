@@ -16,6 +16,7 @@ db.once('open', () => {
 mongoose.connect('mongodb://localhost/paperplane');
 
 /* Middleware settings. */
+app.use(express.static('static'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
