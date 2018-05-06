@@ -53,6 +53,13 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     return sections;
   };
 
+  const replaceImgSrc = function replaceImgSrcToStaticFolder(content, title) {
+    const imgPath = title.replace(' ', '-');
+    const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="((?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
+    /* eslint-disable-next-line no-unused-vars */
+    return content.replace(regex, (match, src, id) => match.replace(src, `/${imgPath}/${src}`));
+  };
+
   const { file } = req;
   try {
     /* TODO: check duplicate paper. */
@@ -60,8 +67,9 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     await runCommand(`unzip ${file.path} -d static/tmp`);
     await runCommand('touch static/tmp/index.html');
     await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
-    const paperContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
-    const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperContent)[1];
+    const paperOriginalContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
+    const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
+    const paperContent = replaceImgSrc(paperOriginalContent, paperTitle);
     const paperSections = findAllSections(paperContent);
     await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
     await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
