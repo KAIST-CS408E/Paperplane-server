@@ -15,6 +15,12 @@ const paperSchema = new mongoose.Schema({
       src: String,
     },
   ],
+  equations: [
+    {
+      number: String,
+      equation: String,
+    },
+  ],
 });
 
 const PaperModel = mongoose.model('paper', paperSchema);

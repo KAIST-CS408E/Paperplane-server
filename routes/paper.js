@@ -62,13 +62,22 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     return sections;
   };
 
-  const processImgSrc = function replaceImgSrcToStaticFolderImg(content, title) {
+  const replaceImgSrc = function replaceImgSrcToStaticFolderImg(content, title) {
     const imgPath = title.replace(' ', '-');
+    const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
+    return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `/${imgPath}/${oldSrc}`));
+  };
+
+  const findFiguresSrc = function findFiguresNumAndSrc(content) {
     const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="((?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
     const figures = [];
 
-    const correctImgSrcContent = content.replace(regex, (match, oldSrc, id) => {
-      const src = `/${imgPath}/${oldSrc}`;
+    let match;
+    while (true) { /* eslint-disable-line no-constant-condition */
+      match = regex.exec(content);
+      if (!match) break;
+
+      const [, src, id] = match;
       const figureMatch = /S[\d]+\.(F[\d]+)/.exec(id);
       if (figureMatch) {
         const figureNumber = figureMatch[1];
@@ -79,14 +88,30 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
           });
         }
       }
+    }
 
-      return match.replace(oldSrc, src);
-    });
+    return figures;
+  };
 
-    return {
-      paperFigures: figures,
-      paperContent: correctImgSrcContent,
-    };
+  const findEquations = function findEquationsHTMLTags(content) {
+    const regex = /<table id="S[\d]+\.(E[\d]+)(?:(?!")[\w\W])*" class="ltx_equation ltx_eqn_table">(?:(?!<\/table>)[\w\W]+)<\/table>/gi;
+    const equations = [];
+
+    let match;
+    while (true) { /* eslint-disable-line no-constant-condition */
+      match = regex.exec(content);
+      if (!match) break;
+
+      const [equationTag, equationNumber] = match;
+      if (!equations.some(equation => equation.number === equationNumber)) {
+        equations.push({
+          number: equationNumber,
+          equation: equationTag,
+        });
+      }
+    }
+
+    return equations;
   };
 
   const { file } = req;
@@ -98,8 +123,10 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
     const paperOriginalContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
-    const { paperFigures, paperContent } = processImgSrc(paperOriginalContent, paperTitle);
+    const paperContent = replaceImgSrc(paperOriginalContent, paperTitle);
     const paperSections = findAllSections(paperContent);
+    const paperFigures = findFiguresSrc(paperContent);
+    const paperEquations = findEquations(paperContent);
     await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
     await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
 
@@ -108,6 +135,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
       content: paperContent,
       sections: paperSections,
       figures: paperFigures,
+      equations: paperEquations,
     });
     /* TODO: duplicate paper check logic required. */
     await newPaper.save();
