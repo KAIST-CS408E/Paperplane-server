@@ -30,6 +30,15 @@ const runCommand = function runCommand(command) {
 
 const router = express.Router();
 
+router.get('/papers/sample', async (req, res) => {
+  try {
+    const papers = await PaperModel.find({});
+    res.end(papers[0].content);
+  } catch (err) {
+    res.status(500).end(err);
+  }
+});
+
 router.get('/papers', async (req, res) => {
   try {
     const papers = await PaperModel.find({});
@@ -53,11 +62,31 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     return sections;
   };
 
-  const replaceImgSrc = function replaceImgSrcToStaticFolder(content, title) {
+  const processImgSrc = function replaceImgSrcToStaticFolderImg(content, title) {
     const imgPath = title.replace(' ', '-');
     const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="((?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
-    /* eslint-disable-next-line no-unused-vars */
-    return content.replace(regex, (match, src, id) => match.replace(src, `/${imgPath}/${src}`));
+    const figures = [];
+
+    const correctImgSrcContent = content.replace(regex, (match, oldSrc, id) => {
+      const src = `/${imgPath}/${oldSrc}`;
+      const figureMatch = /S[\d]+\.(F[\d]+)/.exec(id);
+      if (figureMatch) {
+        const figureNumber = figureMatch[1];
+        if (!figures.some(figure => figure.number === figureNumber)) {
+          figures.push({
+            number: figureNumber,
+            src,
+          });
+        }
+      }
+
+      return match.replace(oldSrc, src);
+    });
+
+    return {
+      paperFigures: figures,
+      paperContent: correctImgSrcContent,
+    };
   };
 
   const { file } = req;
@@ -69,7 +98,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
     const paperOriginalContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
-    const paperContent = replaceImgSrc(paperOriginalContent, paperTitle);
+    const { paperFigures, paperContent } = processImgSrc(paperOriginalContent, paperTitle);
     const paperSections = findAllSections(paperContent);
     await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
     await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
@@ -78,13 +107,14 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
       title: paperTitle,
       content: paperContent,
       sections: paperSections,
+      figures: paperFigures,
     });
     /* TODO: duplicate paper check logic required. */
     await newPaper.save();
     res.status(201).end(`Successfully save the paper: [${paperTitle}]`);
   } catch (err) {
     await runCommand(`rm -rf ${file.path} static/tmp`);
-    res.status(500).end(err);
+    res.status(500).end(JSON.stringify(err));
   }
 });
 
