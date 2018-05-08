@@ -62,10 +62,23 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     return sections;
   };
 
-  const replaceImgSrc = function replaceImgSrcToStaticFolderImg(content, title) {
-    const imgPath = title.replace(' ', '-');
-    const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
-    return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `/${imgPath}/${oldSrc}`));
+  const processPaperContent = function replacePaperContent(originalTitle, originalContent) {
+    const replaceImgSrc = function replaceImgSrcToStaticFolderImg(title, content) {
+      const imgPath = title.replace(' ', '-');
+      const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
+      return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `/${imgPath}/${oldSrc}`));
+    };
+
+    const replaceStyle = function replaceWrongCss(content) {
+      const middleContent1 = content.replace(/margin-left: calc\(50% - 984px \/ 2\);/gi, '');
+      const middleContent2 = middleContent1.replace(/width: 984px;\s+margin-left: auto;\s+margin-right: auto;/gi, '');
+      return middleContent2;
+    };
+
+    const middleContent1 = replaceImgSrc(originalTitle, originalContent);
+    const middleContent2 = replaceStyle(middleContent1);
+
+    return middleContent2;
   };
 
   const findFiguresSrc = function findFiguresNumAndSrc(content) {
@@ -123,7 +136,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
     const paperOriginalContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
-    const paperContent = replaceImgSrc(paperOriginalContent, paperTitle);
+    const paperContent = processPaperContent(paperTitle, paperOriginalContent);
     const paperSections = findAllSections(paperContent);
     const paperFigures = findFiguresSrc(paperContent);
     const paperEquations = findEquations(paperContent);
