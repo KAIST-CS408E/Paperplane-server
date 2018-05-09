@@ -10,3 +10,6 @@ package-lock.json
 
 # static files
 static/
+
+# ec2 instance
+*.pem
