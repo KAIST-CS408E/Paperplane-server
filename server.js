@@ -1,8 +1,12 @@
 /* global process:false */
+import { config } from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import addRoutes from './routes';
+
+/* Environment variable settings. */
+config();
 
 const PORT = process.env.PORT || 8000;
 const app = express();

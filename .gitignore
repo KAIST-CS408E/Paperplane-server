@@ -13,3 +13,6 @@ static/
 
 # ec2 instance
 *.pem
+
+# environment variables
+.env
