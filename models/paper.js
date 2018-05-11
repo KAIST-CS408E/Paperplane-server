@@ -12,13 +12,13 @@ const paperSchema = new mongoose.Schema({
   figures: [
     {
       number: String,
-      src: String,
+      html: String,
     },
   ],
   equations: [
     {
       number: String,
-      equation: String,
+      html: String,
     },
   ],
 });

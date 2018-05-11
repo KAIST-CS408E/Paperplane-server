@@ -81,8 +81,8 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     return middleContent2;
   };
 
-  const findFiguresSrc = function findFiguresNumAndSrc(content) {
-    const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="((?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
+  const findFigures = function findFiguresHTMLTags(content) {
+    const regex = /<figure id="S[\d]+\.(F[\d]+)(?:(?!")[\w\W])*" class="ltx_figure">(?:(?!<\/figure>)[\w\W])+<\/figure>/gi;
     const figures = [];
 
     let match;
@@ -90,16 +90,12 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
       match = regex.exec(content);
       if (!match) break;
 
-      const [, src, id] = match;
-      const figureMatch = /S[\d]+\.(F[\d]+)/.exec(id);
-      if (figureMatch) {
-        const figureNumber = figureMatch[1];
-        if (!figures.some(figure => figure.number === figureNumber)) {
-          figures.push({
-            number: figureNumber,
-            src,
-          });
-        }
+      const [figureTag, figureNumber] = match;
+      if (!figures.some(figure => figure.number === figureNumber)) {
+        figures.push({
+          number: figureNumber,
+          html: figureTag,
+        });
       }
     }
 
@@ -107,7 +103,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
   };
 
   const findEquations = function findEquationsHTMLTags(content) {
-    const regex = /<table id="S[\d]+\.(E[\d]+)(?:(?!")[\w\W])*" class="ltx_equation ltx_eqn_table">(?:(?!<\/table>)[\w\W]+)<\/table>/gi;
+    const regex = /<table id="S[\d]+\.(E[\d]+)(?:(?!")[\w\W])*" class="ltx_equation ltx_eqn_table">(?:(?!<\/table>)[\w\W])+<\/table>/gi;
     const equations = [];
 
     let match;
@@ -119,7 +115,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
       if (!equations.some(equation => equation.number === equationNumber)) {
         equations.push({
           number: equationNumber,
-          equation: equationTag,
+          html: equationTag,
         });
       }
     }
@@ -139,7 +135,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
     const paperContent = processPaperContent(paperTitle, paperOriginalContent);
     const paperSections = findAllSections(paperContent);
-    const paperFigures = findFiguresSrc(paperContent);
+    const paperFigures = findFigures(paperContent);
     const paperEquations = findEquations(paperContent);
     await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
     await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
