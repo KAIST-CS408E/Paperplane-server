@@ -133,7 +133,8 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     await runCommand('mkdir static/tmp');
     await runCommand(`unzip ${file.path} -d static/tmp`);
     await runCommand('touch static/tmp/index.html');
-    await runCommand('latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
+    await runCommand('sudo chmod -R 777 static/tmp');
+    await runCommand('sudo latex-parser/script/engrafo -o static/tmp ./static/tmp/paper.tex');
     const paperOriginalContent = fs.readFileSync('static/tmp/index.html', 'utf-8');
     const paperTitle = /<h1 class="ltx_title ltx_title_document">(.*)<\/h1>/.exec(paperOriginalContent)[1];
     const paperContent = processPaperContent(paperTitle, paperOriginalContent);
