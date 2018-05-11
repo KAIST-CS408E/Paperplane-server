@@ -5,6 +5,8 @@ import fs from 'fs';
 import multer from 'multer';
 import PaperModel from '../models/paper';
 
+const API_URL = 'http://ec2-18-191-57-158.us-east-2.compute.amazonaws.com';
+
 const upload = multer({ dest: './static' });
 
 const runCommand = function runCommand(command) {
@@ -66,7 +68,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     const replaceImgSrc = function replaceImgSrcToStaticFolderImg(title, content) {
       const imgPath = title.replace(' ', '-');
       const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
-      return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `/${imgPath}/${oldSrc}`));
+      return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `${API_URL}/${imgPath}/${oldSrc}`));
     };
 
     const replaceStyle = function replaceWrongCss(content) {
