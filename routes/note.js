@@ -26,7 +26,7 @@ router.get('/notes', async (req, res) => {
 });
 
 router.post('/notes', async (req, res) => {
-  const { uid: createdBy, paperId: paper, sectionId: section, title, content } = req.body;
+  const { uid: createdBy, paperId: paper, section, title, content } = req.body;
 
   /* TODO: validate uid, paperId, sectionId. */
 
