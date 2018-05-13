@@ -43,7 +43,7 @@ router.post('/notes', async (req, res) => {
     return res.status(500).end(err);
   }
 
-  res.status(201).end(`Successfully created a note with title: ${title}`);
+  res.status(201).json(newNote);
 });
 
 router.put('/notes/:noteId', async (req, res) => {
