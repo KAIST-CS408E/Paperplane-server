@@ -47,18 +47,13 @@ router.post('/notes', async (req, res) => {
 });
 
 router.put('/notes/:noteId', async (req, res) => {
-  const { uid: createdBy, paperId: paper, sectionId: section, title, content } = req.body;
-
-  /* TODO: Authorize the request sender; sender's uid === note's uid? */
+  const { title, content } = req.body;
 
   let note;
   try {
     note = await NoteModel.findById(req.params.noteId);
   } catch (err) {
     return res.status(500).end(err);
-  }
-  if (note.createdBy !== createdBy || note.paper !== paper || note.section !== section) {
-    return res.status(400).end('Please try with correct uid, paperId, and sectionId.');
   }
 
   note.title = title;
