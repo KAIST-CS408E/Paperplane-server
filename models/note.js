@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const noteSchema = new mongoose.Schema({
   createdBy: String,
   paper: String,
-  section: String,
+  section: Number,
   title: String,
   content: String,
 });
