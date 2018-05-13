@@ -20,7 +20,8 @@ router.get('/notes', async (req, res) => {
         ..._notesBySection,
       };
     }
-    return _notesBySection[note.section].push(note);
+    _notesBySection[note.section].push(note);
+    return _notesBySection;
   }, {});
   res.json(notesBySection);
 });
