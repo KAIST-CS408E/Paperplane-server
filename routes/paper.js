@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import multer from 'multer';
 import PaperModel from '../models/paper';
+import NoteModel from '../models/note';
 
 const API_URL = 'http://ec2-18-191-57-158.us-east-2.compute.amazonaws.com';
 
@@ -175,6 +176,25 @@ router.delete('/papers/:title', async (req, res) => {
   } catch (err) {
     res.status(500).end(err);
   }
+});
+
+router.get('/papers/read-by/:uid', async (req, res) => {
+  const { uid } = req.params;
+  if (!uid) return res.status(400).end('You need to specify uid in url.');
+
+  let notes;
+  try {
+    notes = await NoteModel.find({ createdBy: uid });
+  } catch (err) {
+    return res.status(500).end(err);
+  }
+
+  const paperIds = notes.reduce((_paperIds, note) => {
+    if (_paperIds.includes(note.paper)) return _paperIds;
+    _paperIds.push(note.paper);
+    return _paperIds;
+  }, []);
+  res.json(paperIds);
 });
 
 export default router;
