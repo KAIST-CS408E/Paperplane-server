@@ -159,20 +159,20 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
   }
 });
 
-router.get('/papers/:title', async (req, res) => {
+router.get('/papers/:paperId', async (req, res) => {
   try {
-    const paper = await PaperModel.findOne({ title: req.params.title });
-    if (!paper) return res.status(400).end(`No paper with title [${req.params.title}].`);
+    const paper = await PaperModel.findOne({ _id: req.params.paperId });
+    if (!paper) return res.status(400).end(`No paper with _id [${req.params.paperId}].`);
     res.json(paper);
   } catch (err) {
     res.status(500).end(err);
   }
 });
 
-router.delete('/papers/:title', async (req, res) => {
+router.delete('/papers/:paperId', async (req, res) => {
   try {
-    await PaperModel.remove({ title: req.params.title });
-    res.end(`Successfully delete the paper: [${req.params.title}]`);
+    await PaperModel.remove({ _id: req.params.paperId });
+    res.end(`Successfully delete the paper with _id: [${req.params.paperId}]`);
   } catch (err) {
     res.status(500).end(err);
   }
