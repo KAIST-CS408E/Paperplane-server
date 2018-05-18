@@ -184,17 +184,17 @@ router.get('/papers/read-by/:uid', async (req, res) => {
 
   let notes;
   try {
-    notes = await NoteModel.find({ createdBy: uid });
+    notes = await NoteModel.find({ createdBy: uid }).populate('paper');
   } catch (err) {
     return res.status(500).end(err);
   }
 
-  const paperIds = notes.reduce((_paperIds, note) => {
-    if (_paperIds.includes(note.paper)) return _paperIds;
-    _paperIds.push(note.paper);
-    return _paperIds;
+  const papers = notes.reduce((_papers, note) => {
+    if (_papers.some(_paper => _paper._id === note.paper._id)) return _papers;
+    _papers.push(note.paper);
+    return _papers;
   }, []);
-  res.json(paperIds);
+  res.json(papers);
 });
 
 export default router;
