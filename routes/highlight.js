@@ -11,7 +11,7 @@ router.get('/highlights', async (req, res) => {
   try {
     highlights = await HighlightModel.find({ createdBy: uid, paper: paperId });
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
   res.json(highlights);
 });
@@ -31,7 +31,7 @@ router.post('/highlights', async (req, res) => {
   try {
     await newHighlight.save();
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(201).json(newHighlight);
@@ -43,7 +43,7 @@ router.delete('/highlights/:highlightId', async (req, res) => {
   try {
     await HighlightModel.remove({ _id: req.params.highlightId });
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(204).end(`Successfully deleted a highlight with _id: ${req.params.highlightId}`);

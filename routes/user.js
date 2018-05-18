@@ -9,7 +9,7 @@ const router = express.Router();
 //   try {
 //     user = await UserModel.findOne({ _id: req.params._id });
 //   } catch (err) {
-//     return res.status(500).end(err);
+//     return res.status(500).end(err.message);
 //   }
 //   const { password, ...userWithoutPassword } = user;
 //   res.json(userWithoutPassword);
@@ -29,7 +29,7 @@ router.post('/users', async (req, res) => {
   try {
     await newUser.save();
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(201).end(`Successfully created a new user: ${id}`);
@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
   try {
     user = await UserModel.findOne({ id, password });
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
   if (!user) return res.status(401).end();
   const { password: _, ...userWithoutPassword } = user._doc;

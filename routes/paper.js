@@ -38,7 +38,7 @@ router.get('/papers/sample', async (req, res) => {
     const papers = await PaperModel.find({});
     res.end(papers[0].content);
   } catch (err) {
-    res.status(500).end(err);
+    res.status(500).end(err.message);
   }
 });
 
@@ -47,7 +47,7 @@ router.get('/papers', async (req, res) => {
     const papers = await PaperModel.find({});
     res.json(papers);
   } catch (err) {
-    res.status(500).end(err);
+    res.status(500).end(err.message);
   }
 });
 
@@ -165,7 +165,7 @@ router.get('/papers/:paperId', async (req, res) => {
     if (!paper) return res.status(400).end(`No paper with _id [${req.params.paperId}].`);
     res.json(paper);
   } catch (err) {
-    res.status(500).end(err);
+    res.status(500).end(err.message);
   }
 });
 
@@ -174,7 +174,7 @@ router.delete('/papers/:paperId', async (req, res) => {
     await PaperModel.remove({ _id: req.params.paperId });
     res.end(`Successfully delete the paper with _id: [${req.params.paperId}]`);
   } catch (err) {
-    res.status(500).end(err);
+    res.status(500).end(err.message);
   }
 });
 
@@ -186,7 +186,7 @@ router.get('/papers/read-by/:uid', async (req, res) => {
   try {
     notes = await NoteModel.find({ createdBy: uid }).populate('paper');
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   const papers = notes.reduce((_papers, note) => {

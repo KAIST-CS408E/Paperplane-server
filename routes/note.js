@@ -11,7 +11,7 @@ router.get('/notes', async (req, res) => {
   try {
     notes = await NoteModel.find({ createdBy: uid, paper: paperId });
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
   const notesBySection = notes.reduce((_notesBySection, note) => {
     if (!(note.section in _notesBySection)) {
@@ -41,7 +41,7 @@ router.post('/notes', async (req, res) => {
   try {
     await newNote.save();
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(201).json(newNote);
@@ -54,7 +54,7 @@ router.put('/notes/:noteId', async (req, res) => {
   try {
     note = await NoteModel.findById(req.params.noteId);
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   note.title = title;
@@ -62,7 +62,7 @@ router.put('/notes/:noteId', async (req, res) => {
   try {
     await note.save();
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(204).end(`Successfully updated a note with _id: ${req.params.noteId}`);
@@ -74,7 +74,7 @@ router.delete('/notes/:noteId', async (req, res) => {
   try {
     await NoteModel.remove({ _id: req.params.noteId });
   } catch (err) {
-    return res.status(500).end(err);
+    return res.status(500).end(err.message);
   }
 
   res.status(204).end(`Successfully deleted a note with _id: ${req.params.noteId}`);
