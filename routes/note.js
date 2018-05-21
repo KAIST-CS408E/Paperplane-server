@@ -4,22 +4,20 @@ import NoteModel from '../models/note';
 const router = express.Router();
 
 router.get('/notes', async (req, res) => {
-  const { uid, paperId, query } = req.query;
-  if (!uid || !paperId) return res.status(400).end('You need to specify both uid and paperId as url query.');
+  const { uid, paperId, query = '' } = req.query;
+  if (!paperId) return res.status(400).end('You need to specify paperId as url query.');
 
+  const fetchOptions = { paper: paperId };
+  if (uid) fetchOptions.createdBy = uid;
+  if (query) {
+    fetchOptions.$or = [
+      { title: { $regex: query, $options: 'i' } },
+      { content: { $regex: query, $options: 'i' } },
+    ];
+  }
   let notes;
   try {
-    if (!query) notes = await NoteModel.find({ createdBy: uid, paper: paperId });
-    else {
-      notes = await NoteModel.find({
-        createdBy: uid,
-        paper: paperId,
-        $or: [
-          { title: { $regex: query, $options: 'i' } },
-          { content: { $regex: query, $options: 'i' } },
-        ],
-      });
-    }
+    notes = await NoteModel.find(fetchOptions);
   } catch (err) {
     return res.status(500).end(err.message);
   }
