@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const summarySchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'users',
+    ref: 'user',
   },
   paper: {
     type: mongoose.Schema.Types.ObjectId,
