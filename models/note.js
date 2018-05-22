@@ -10,6 +10,7 @@ const noteSchema = new mongoose.Schema({
     ref: 'paper',
   },
   section: Number,
+  isSummary: Boolean,
   title: String,
   content: String,
 });
