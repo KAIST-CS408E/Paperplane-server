@@ -4,7 +4,7 @@ import NoteModel from '../models/note';
 const router = express.Router();
 
 router.get('/notes', async (req, res) => {
-  const { uid, paperId, query = '' } = req.query;
+  const { uid, paperId, query = '', section } = req.query;
   if (!paperId) return res.status(400).end('You need to specify paperId as url query.');
 
   const fetchOptions = { paper: paperId };
@@ -40,6 +40,8 @@ router.get('/notes', async (req, res) => {
     _notesBySection[note.section].push(note);
     return _notesBySection;
   }, {});
+
+  if (section) return res.json(notesBySection[section]);
   res.json(notesBySection);
 });
 
