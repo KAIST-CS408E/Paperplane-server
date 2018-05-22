@@ -17,10 +17,19 @@ router.get('/notes', async (req, res) => {
   }
   let notes;
   try {
-    notes = await NoteModel.find(fetchOptions);
+    notes = await NoteModel.find(fetchOptions).populate('createdBy');
   } catch (err) {
     return res.status(500).end(err.message);
   }
+  notes = notes.map(({ _doc: note }) => {
+    const { createdBy } = note;
+    const newNote = { ...note };
+    newNote.createdBy = createdBy._id;
+    newNote.createdUserName = createdBy.nickname;
+    newNote.createdUserId = createdBy.id;
+    return newNote;
+  });
+
   const notesBySection = notes.reduce((_notesBySection, note) => {
     if (!(note.section in _notesBySection)) {
       return {
