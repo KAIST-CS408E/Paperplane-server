@@ -141,7 +141,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
     const paperFigures = findFigures(paperContent);
     const paperEquations = findEquations(paperContent);
     await runCommand(`rm static/tmp/index.html static/tmp/paper.tex ${file.path}`);
-    await runCommand(`mv static/tmp static/${paperTitle.replace(' ', '-')}`);
+    await runCommand(`mv static/tmp static/${paperTitle.replace(/\s+/g, '-')}`);
 
     const newPaper = new PaperModel({
       title: paperTitle,
