@@ -68,7 +68,7 @@ router.post('/papers', upload.single('paper'), async (req, res) => {
   const processPaperContent = function replacePaperContent(originalTitle, originalContent) {
     const replaceImgSrc = function replaceImgSrcToStaticFolderImg(title, content) {
       const imgPath = title.replace(/\s+/g, '-');
-      const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
+      const regex = /<img src="((?:(?![\s"])[\w\W])+)" id="(?:(?:(?![\s"])[\w\W])+)" class="ltx_graphics(?:(?:(?!")[\w\W])+)" (?:(?:(?!=)\w)+="(?:(?!")[\w\W])+"\s?)*alt="">/gi;
       return content.replace(regex, (match, oldSrc) => match.replace(oldSrc, `${API_URL}/${imgPath}/${oldSrc}`));
     };
 
