@@ -41,7 +41,7 @@ router.get('/notes', async (req, res) => {
     return _notesBySection;
   }, {});
 
-  if (section) return res.json(notesBySection[section]);
+  if (section) return res.json(notesBySection[section - 1]);
   res.json(notesBySection);
 });
 
