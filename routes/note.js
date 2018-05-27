@@ -46,7 +46,7 @@ router.get('/notes', async (req, res) => {
 });
 
 router.post('/notes', async (req, res) => {
-  const { uid: createdBy, paperId: paper, section, isSummary, title, content } = req.body;
+  const { uid: createdBy, paperId: paper, section, isSummary, title, quote, content } = req.body;
 
   /* TODO: validate uid, paperId, sectionId. */
 
@@ -56,6 +56,7 @@ router.post('/notes', async (req, res) => {
     section,
     isSummary: !!isSummary,
     title,
+    quote,
     content,
   });
   try {
@@ -68,7 +69,7 @@ router.post('/notes', async (req, res) => {
 });
 
 router.put('/notes/:noteId', async (req, res) => {
-  const { title, content } = req.body;
+  const { title, quote, content } = req.body;
 
   let note;
   try {
@@ -78,6 +79,7 @@ router.put('/notes/:noteId', async (req, res) => {
   }
 
   note.title = title;
+  note.quote = quote;
   note.content = content;
   try {
     await note.save();

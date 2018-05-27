@@ -12,6 +12,7 @@ const noteSchema = new mongoose.Schema({
   section: Number,
   isSummary: Boolean,
   title: String,
+  quote: String,
   content: String,
 });
 
